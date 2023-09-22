@@ -6,11 +6,7 @@ import { AppService } from './app.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const cron = new AppService(new SchedulerRegistry());
 
-  // if this program happens to have an error, on boot this will
-  // be called database and automatically populate the cronjobs
-  //await cron.callDataBaseToManuallyAdd()
 
   await app.listen(3000);
 }

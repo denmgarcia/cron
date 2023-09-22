@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Cron, SchedulerRegistry } from '@nestjs/schedule';
 import axios from 'axios';
 import { CronJob } from 'cron';
@@ -15,13 +15,28 @@ export interface CronParams {
 }
 
 @Injectable()
-export class AppService {
+export class AppService implements OnModuleInit {
 
   constructor(private schedulerRegistry: SchedulerRegistry) {}
 
+  onModuleInit() {
+      console.log("sdfdf")
+      const callToDB: Array<CronParams>   = [
+        {seconds: "*", "minutes": "*", hours: "*", dayMonths: "*", month: "*", dayWeek: "*", name: "test", 
+        endpoint: "https://jsonplaceholder.typicode.com/todos/1" },
+        {seconds: "*", "minutes": "*", hours: "*", dayMonths: "*", month: "*", dayWeek: "*", name: "henlo", endpoint: "https://jsonplaceholder.typicode.com/todos/" },
+      ]
+  
+      callToDB.forEach(({ seconds, name}) => {
+        this.addCronJobs(name, seconds);
+      });
+  }
+
   deleteCron(name: string) {
+    console.log(name)
     this.schedulerRegistry.deleteCronJob(name);
     console.log("deleted", name)
+
   }
 
   addCronJobs(name: string, seconds: string ) {
@@ -60,16 +75,20 @@ export class AppService {
 
   async callDataBaseToManuallyAdd() {
     const callToDB: Array<CronParams>   = [
-      {seconds: "1", "minutes": "*", hours: "*", dayMonths: "*", month: "*", dayWeek: "*", name: "test", 
+      {seconds: "*", "minutes": "*", hours: "*", dayMonths: "*", month: "*", dayWeek: "*", name: "test", 
       endpoint: "https://jsonplaceholder.typicode.com/todos/1" },
-      {seconds: "45", "minutes": "*", hours: "*", dayMonths: "*", month: "*", dayWeek: "*", name: "henlo", endpoint: "https://jsonplaceholder.typicode.com/todos/" },
+      {seconds: "*", "minutes": "*", hours: "*", dayMonths: "*", month: "*", dayWeek: "*", name: "henlo", endpoint: "https://jsonplaceholder.typicode.com/todos/" },
     ]
+
+    
 
     if(!this.checkIfHasNoCronJobStored().size) {
         callToDB.forEach(({ seconds, name}) => {
           this.addCronJobs(name, seconds);
         });
     }
+
+
 
 
 

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Request } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Request } from '@nestjs/common';
 import { AppService } from './app.service';
 
 export class Params {
@@ -21,8 +21,8 @@ export class AppController {
     this.appService.addCronJobs(name, seconds);
   }
 
-  @Post("/delete")
-  deleteDB(@Body() name: Params) {
-    this.appService.deleteCron(name.name);
+  @Post("/delete/:name")
+  deleteDB(@Param("name") name: string) {
+    this.appService.deleteCron(name);
   }
 }
