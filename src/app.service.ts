@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Cron, SchedulerRegistry } from '@nestjs/schedule';
 import axios from 'axios';
-import { CronJob } from 'cron';
+import { CronJob, job } from 'cron';
 
 export interface CronParams {
   seconds?: string;
@@ -24,34 +24,57 @@ export class AppService implements OnModuleInit {
       const callToDB: Array<CronParams>   = [
         {seconds: "*", "minutes": "*", hours: "*", dayMonths: "*", month: "*", dayWeek: "*", name: "test", 
         endpoint: "https://jsonplaceholder.typicode.com/todos/1" },
-        {seconds: "*", "minutes": "*", hours: "*", dayMonths: "*", month: "*", dayWeek: "*", name: "henlo", endpoint: "https://jsonplaceholder.typicode.com/todos/" },
+        {seconds: "*", "minutes": "*", hours: "*", dayMonths: "*", month: "*", dayWeek: "*", name: "henlo", endpoint: "https://jsonplaceholder.typicode.com/todos/1" },
       ]
+
+      if(!this.schedulerRegistry.getCronJobs().size) {
+         //call to database
+         callToDB.forEach((data: CronParams) => {
+          this.addCronJobs(data);
+        });
+      }
   
-      callToDB.forEach(({ seconds, name}) => {
-        this.addCronJobs(name, seconds);
-      });
+
   }
 
   deleteCron(name: string) {
-    console.log(name)
     this.schedulerRegistry.deleteCronJob(name);
-    console.log("deleted", name)
+    return {
+      data: "SFSDFSDF"
+    }
 
   }
 
-  addCronJobs(name: string, seconds: string ) {
-     // const { seconds, minutes, hours, dayMonths, month, dayWeek, name, endpoint } = data
-      const jobs = new CronJob(`${seconds} * * * * *`, () => {
-        console.log(`${name}_${new Date()}`);
+  startAndStopJobs(data: CronParams, isStart: boolean = true) {
+    const {jobs, name} = this.addJobs(data);
+    if(isStart) {
+      jobs.start()
+    }
+    jobs.stop()
 
-        axios.get("https://jsonplaceholder.typicode.com/todos/1").then(res => console.log(res.data))
-  
-      });
+    isStart ? jobs.start() : jobs.stop()
+  }
+
+  addJobs(data: CronParams) {
+    const { seconds, minutes, hours, dayMonths, month, dayWeek, name, endpoint } = data
+    const jobs = new CronJob(`${seconds} * * * * *`, () => {
+      console.log(`${name}_${new Date()}`);
+
+      axios.get(endpoint).then(res => console.log(res.data))
+
+    });
+
+    return {jobs, name};
+  }
+
+  addCronJobs(data: CronParams) {
+
+    const {jobs, name} = this.addJobs(data);
       this.schedulerRegistry.addCronJob(name, jobs);
       jobs.start();
     }
 
-  checkLength() {
+  checkCronJobs() {
     return this.schedulerRegistry.getCronJobs();
   }
 
@@ -68,33 +91,6 @@ export class AppService implements OnModuleInit {
       }
     });
   }
-
-  checkIfHasNoCronJobStored() {
-    return this.schedulerRegistry.getCronJobs()
-  }
-
-  async callDataBaseToManuallyAdd() {
-    const callToDB: Array<CronParams>   = [
-      {seconds: "*", "minutes": "*", hours: "*", dayMonths: "*", month: "*", dayWeek: "*", name: "test", 
-      endpoint: "https://jsonplaceholder.typicode.com/todos/1" },
-      {seconds: "*", "minutes": "*", hours: "*", dayMonths: "*", month: "*", dayWeek: "*", name: "henlo", endpoint: "https://jsonplaceholder.typicode.com/todos/" },
-    ]
-
-    
-
-    if(!this.checkIfHasNoCronJobStored().size) {
-        callToDB.forEach(({ seconds, name}) => {
-          this.addCronJobs(name, seconds);
-        });
-    }
-
-
-
-
-
-
-  }
-
 
 
 }
