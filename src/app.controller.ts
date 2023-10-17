@@ -25,4 +25,8 @@ export class AppController {
   deleteDB(@Param("name") name: string) {
     return this.appService.deleteCron(name);
   }
+
+  test(@Param("name") name: string) {
+    console.log("SDGSDGSD")
+  }
 }
